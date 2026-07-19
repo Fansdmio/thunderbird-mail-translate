@@ -28,6 +28,19 @@ describe("settings", () => {
       openaiModel: "",
     });
     assert.equal(r.ok, false);
+    assert.equal(r.code, "errorOpenaiBaseUrlRequired");
+  });
+
+  it("openai 非法 URL 失败", () => {
+    const r = validateSettingsForEngine({
+      ...DEFAULT_SETTINGS,
+      engine: "openai",
+      openaiBaseUrl: "notaurl",
+      openaiApiKey: "k",
+      openaiModel: "m",
+    });
+    assert.equal(r.ok, false);
+    assert.equal(r.code, "errorInvalidBaseUrl");
   });
 
   it("normalizeSettings 填充默认目标语言", () => {

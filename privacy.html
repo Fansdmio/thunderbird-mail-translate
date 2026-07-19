@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mail Translate — Privacy Policy / 隐私政策</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      max-width: 760px;
+      margin: 32px auto;
+      padding: 0 16px 48px;
+      line-height: 1.65;
+      color: #1a1a1a;
+    }
+    h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.15rem; margin-top: 1.75rem; }
+    .meta { color: #666; font-size: 0.92rem; margin-bottom: 1.5rem; }
+    .lang { border-top: 1px solid #e5e5e5; margin-top: 2.5rem; padding-top: 0.5rem; }
+    ul { padding-left: 1.25rem; }
+    code { background: #f4f4f4; padding: 0 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Mail Translate Privacy Policy</h1>
+  <p class="meta">Extension ID: <code>mail-translate@uuyo.pw</code> · Effective: 2026-07-19 · Version: 0.1.6</p>
+
+  <h2>Summary</h2>
+  <ul>
+    <li>Mail content is sent <strong>only</strong> to the translation service you select.</li>
+    <li>API keys and settings are stored <strong>only on this device</strong> via Thunderbird local storage.</li>
+    <li>This add-on does <strong>not</strong> operate a relay/proxy server and does not collect analytics.</li>
+  </ul>
+
+  <h2>Data processed</h2>
+  <ul>
+    <li><strong>Message subject and body</strong> of the mail you manually choose to translate.</li>
+    <li><strong>Settings</strong>: engine choice, target language, optional Azure key/region, optional AI Base URL / API key / model.</li>
+  </ul>
+
+  <h2>Where data is sent</h2>
+  <ul>
+    <li><strong>Microsoft Translator (default, no key)</strong>: temporary token from <code>edge.microsoft.com</code>, translation via Microsoft Translator Cognitive endpoints.</li>
+    <li><strong>Microsoft Azure</strong>: your Azure Translator endpoint with the key/region you provide.</li>
+    <li><strong>Custom AI</strong>: only the Base URL host you configure (OpenAI-compatible). Host permission is requested at save/test time.</li>
+  </ul>
+  <p>Nothing is sent until you click Translate (or Test connection in settings).</p>
+
+  <h2>Permissions</h2>
+  <ul>
+    <li><code>messagesRead</code> / <code>messagesModify</code>: read displayed mail and replace body in the reading pane (local UI only; server mail is not rewritten).</li>
+    <li><code>storage</code>: save settings.</li>
+    <li><code>tabs</code>: associate translation state with the reading tab.</li>
+    <li>Host permissions for Microsoft Translator endpoints; optional host permission for your custom AI origin.</li>
+  </ul>
+
+  <h2>Retention</h2>
+  <p>In-session translation cache lives in memory and is discarded when the tab closes or Thunderbird restarts. Provider-side retention follows each third-party service’s own policy.</p>
+
+  <h2>Contact</h2>
+  <p>For privacy questions about this add-on, open an issue on the project repository or contact the developer listed on addons.thunderbird.net.</p>
+
+  <div class="lang">
+    <h1>邮件翻译 隐私政策</h1>
+    <p class="meta">扩展 ID：<code>mail-translate@uuyo.pw</code> · 生效日期：2026-07-19 · 版本：0.1.6</p>
+
+    <h2>摘要</h2>
+    <ul>
+      <li>邮件内容<strong>仅</strong>发送到你选择的翻译服务。</li>
+      <li>API 密钥与设置<strong>仅保存在本机</strong>（Thunderbird 本地存储）。</li>
+      <li>本扩展<strong>不</strong>经过作者中继服务器，也不收集分析数据。</li>
+    </ul>
+
+    <h2>处理的数据</h2>
+    <ul>
+      <li>你<strong>手动点击翻译</strong>时的邮件主题与正文。</li>
+      <li>设置项：引擎、目标语言，以及可选的 Azure / 自定义 AI 配置。</li>
+    </ul>
+
+    <h2>数据发送目标</h2>
+    <ul>
+      <li><strong>微软翻译（默认免配置）</strong>：令牌来自 <code>edge.microsoft.com</code>，译文来自微软 Translator 接口。</li>
+      <li><strong>微软 Azure</strong>：使用你填写的密钥与区域调用 Azure Translator。</li>
+      <li><strong>自定义 AI</strong>：仅请求你配置的 Base URL 主机；保存/测试时按需申请主机权限。</li>
+    </ul>
+    <p>在你点击「翻译」或设置页「测试连接」之前，不会发送邮件内容。</p>
+
+    <h2>权限说明</h2>
+    <ul>
+      <li><code>messagesRead</code> / <code>messagesModify</code>：读取当前邮件并在阅读窗替换显示（不修改服务器上的原邮件）。</li>
+      <li><code>storage</code>：保存设置。</li>
+      <li><code>tabs</code>：关联标签页翻译状态。</li>
+      <li>微软翻译主机权限；自定义 AI 的可选主机权限。</li>
+    </ul>
+
+    <h2>保留期限</h2>
+    <p>会话内译文缓存在内存中，关闭标签或重启 Thunderbird 后清除。第三方服务侧保留策略以其自身政策为准。</p>
+
+    <h2>联系</h2>
+    <p>隐私相关问题可通过项目仓库 Issue，或 ATN 商店页上的开发者联系方式反馈。</p>
+  </div>
+</body>
+</html>

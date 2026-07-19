@@ -1,0 +1,150 @@
+{
+  "extensionName": {
+    "message": "Mail Translate"
+  },
+  "extensionDescription": {
+    "message": "Translate the full subject and body of the message you are reading. Supports Microsoft Translator and custom OpenAI-compatible AI."
+  },
+  "actionTranslate": {
+    "message": "Translate"
+  },
+  "actionShowOriginal": {
+    "message": "Show original"
+  },
+  "actionShowTranslated": {
+    "message": "Show translation"
+  },
+  "actionTranslating": {
+    "message": "Translating…"
+  },
+  "optionsTitle": {
+    "message": "Mail Translate Settings"
+  },
+  "optionsHeading": {
+    "message": "Mail Translate Settings"
+  },
+  "optionsGeneral": {
+    "message": "General"
+  },
+  "optionsEngine": {
+    "message": "Translation engine"
+  },
+  "optionsEngineMicrosoftFree": {
+    "message": "Microsoft Translator (default, no setup)"
+  },
+  "optionsEngineAzure": {
+    "message": "Microsoft Azure (API key required)"
+  },
+  "optionsEngineOpenai": {
+    "message": "Custom AI (OpenAI-compatible)"
+  },
+  "optionsTargetLang": {
+    "message": "Target language"
+  },
+  "optionsAzure": {
+    "message": "Microsoft Azure"
+  },
+  "optionsAzureKey": {
+    "message": "Subscription key"
+  },
+  "optionsAzureRegion": {
+    "message": "Region"
+  },
+  "optionsAzureRegionPlaceholder": {
+    "message": "eastasia"
+  },
+  "optionsOpenai": {
+    "message": "Custom AI"
+  },
+  "optionsOpenaiBaseUrl": {
+    "message": "Base URL"
+  },
+  "optionsOpenaiBaseUrlPlaceholder": {
+    "message": "https://api.openai.com/v1"
+  },
+  "optionsOpenaiKey": {
+    "message": "API Key"
+  },
+  "optionsOpenaiModel": {
+    "message": "Model ID"
+  },
+  "optionsOpenaiModelPlaceholder": {
+    "message": "gpt-4o-mini"
+  },
+  "optionsSave": {
+    "message": "Save"
+  },
+  "optionsTest": {
+    "message": "Test connection"
+  },
+  "optionsHint": {
+    "message": "Default Microsoft Translator needs no key. Message content is sent only to the engine you choose. API keys stay on this device."
+  },
+  "optionsPrivacy": {
+    "message": "Privacy policy"
+  },
+  "optionsHostPermissionNote": {
+    "message": "Custom AI requires host access to your Base URL origin. Thunderbird will ask for permission when you save or test."
+  },
+  "statusSaved": {
+    "message": "Saved"
+  },
+  "statusTesting": {
+    "message": "Testing…"
+  },
+  "statusSaveFailed": {
+    "message": "Save failed"
+  },
+  "statusTestFailed": {
+    "message": "Test failed"
+  },
+  "statusTestOk": {
+    "message": "Connected: $1",
+    "placeholders": {
+      "sample": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusPermissionDenied": {
+    "message": "Host permission denied for the AI endpoint"
+  },
+  "errorAzureKeyRequired": {
+    "message": "Please enter the Azure subscription key"
+  },
+  "errorAzureRegionRequired": {
+    "message": "Please enter the Azure region (e.g. eastasia)"
+  },
+  "errorOpenaiBaseUrlRequired": {
+    "message": "Please enter the AI Base URL"
+  },
+  "errorOpenaiApiKeyRequired": {
+    "message": "Please enter the API key"
+  },
+  "errorOpenaiModelRequired": {
+    "message": "Please enter the model ID"
+  },
+  "errorUnknownEngine": {
+    "message": "Unknown translation engine"
+  },
+  "errorInvalidBaseUrl": {
+    "message": "Base URL is invalid. Use http(s)://host/..."
+  },
+  "errorHostPermissionMissing": {
+    "message": "Missing host permission for the AI endpoint. Open settings, save again, and allow access."
+  },
+  "errorNoMessage": {
+    "message": "No message is open"
+  },
+  "errorTranslateFailed": {
+    "message": "Translation failed"
+  },
+  "subjectPrefix": {
+    "message": "Subject: $1",
+    "placeholders": {
+      "subject": {
+        "content": "$1"
+      }
+    }
+  }
+}

@@ -1,6 +1,8 @@
-# Thunderbird 邮件翻译
+# Thunderbird 邮件翻译（Mail Translate）
 
 阅读收到的邮件时，一键将主题与正文全文替换为译文，并支持原文/译文切换。
+
+扩展 ID：`mail-translate@uuyo.pw` · 版本见 `manifest.json`
 
 ## 功能
 
@@ -12,25 +14,25 @@
 - AI 引擎将多段文本合并为**一次对话**批量翻译（JSON 数组），减少请求次数与耗时
 - 目标语言在设置页全局选择
 - 切换邮件时按钮状态自动同步
+- 自定义 AI 仅在保存/测试时按需申请对应主机权限（不再使用 `<all_urls>`）
 
 ## 目录结构
 
 ```
 ├── manifest.json              # 扩展清单
-├── _locales/                  # 本地化
+├── privacy.html               # 隐私政策（中英）
+├── _locales/                  # en / zh_CN
 ├── src/
 │   ├── background/            # 后台：调度、引擎、翻译服务
-│   │   ├── background.js
-│   │   ├── translate-service.js
-│   │   └── providers/         # 微软免 Key / Azure / OpenAI 兼容
 │   ├── content/               # 阅读窗脚本
 │   ├── options/               # 设置页
-│   ├── shared/                # 设置、语言、HTML 文本处理
+│   ├── shared/                # 设置、语言、主机权限、HTML 文本处理
 │   └── icons/
-├── tests/                     # 单元测试
-├── scripts/pack.js            # 打包脚本
+├── tests/
+├── scripts/pack.js
 ├── dist/                      # 安装包（xpi/zip/jar）
-└── docs/                      # 设计与实施文档
+└── docs/
+    └── store/                 # ATN 商店文案与提交流程
 ```
 
 ## 安装
@@ -42,7 +44,7 @@
 ## 使用
 
 1. 打开一封邮件
-2. 点击阅读窗工具栏「翻译」
+2. 点击阅读窗工具栏「翻译 / Translate」
 3. 按钮变为「显示原文」，可来回切换
 4. 切换到其他邮件时按钮会自动恢复为「翻译」（若该邮件本会话译过则为「显示译文」）
 
@@ -53,7 +55,7 @@
 - 翻译引擎：微软免配置 / Azure / 自定义 AI
 - 目标语言
 - Azure 密钥与区域
-- AI 的 Base URL、API Key、模型 ID
+- AI 的 Base URL、API Key、模型 ID（保存时会请求该主机访问权限）
 - 测试连接
 
 ## 开发
@@ -61,14 +63,24 @@
 ```powershell
 npm install
 npm test
+npm run lint
 npm run pack
 ```
 
 ## 隐私
 
+详见包内 [`privacy.html`](privacy.html)。
+
 - 邮件内容仅发送到你选择的翻译服务
 - API Key 只保存在本机
 - 本扩展不经过作者中继服务器
+
+## 发布到 ATN
+
+商店文案与清单见：
+
+- [`docs/store/ATN-LISTING.md`](docs/store/ATN-LISTING.md)
+- [`docs/store/SUBMIT.md`](docs/store/SUBMIT.md)
 
 ## 限制
 

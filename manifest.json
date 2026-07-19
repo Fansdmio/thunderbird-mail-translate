@@ -2,11 +2,12 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "0.1.5",
-  "default_locale": "zh_CN",
+  "version": "0.1.6",
+  "default_locale": "en",
+  "author": "Mail Translate",
   "applications": {
     "gecko": {
-      "id": "translate@local.thunderbird",
+      "id": "mail-translate@uuyo.pw",
       "strict_min_version": "128.0"
     }
   },
@@ -17,14 +18,17 @@
     "tabs",
     "https://edge.microsoft.com/*",
     "https://api-edge.cognitive.microsofttranslator.com/*",
-    "https://api.cognitive.microsofttranslator.com/*",
-    "https://*.cognitive.microsofttranslator.com/*",
-    "<all_urls>"
+    "https://api.cognitive.microsofttranslator.com/*"
+  ],
+  "optional_permissions": [
+    "http://*/*",
+    "https://*/*"
   ],
   "background": {
     "scripts": [
       "src/shared/languages.js",
       "src/shared/settings.js",
+      "src/shared/host-permissions.js",
       "src/shared/html-text.js",
       "src/background/providers/microsoft-free.js",
       "src/background/providers/microsoft-azure.js",
@@ -94,4 +98,3 @@
     "128": "src/icons/icon-store-128.png"
   }
 }
-

@@ -39,7 +39,15 @@ function applySubject(subject) {
       "font-weight:600;font-family:sans-serif;position:relative;z-index:9999;";
     if (document.body) document.body.insertBefore(banner, document.body.firstChild);
   }
-  if (banner) banner.textContent = "主题：" + subject;
+  if (banner) {
+    try {
+      banner.textContent =
+        (browser.i18n && browser.i18n.getMessage("subjectPrefix", [subject])) ||
+        ("Subject: " + subject);
+    } catch (e) {
+      banner.textContent = "Subject: " + subject;
+    }
+  }
 }
 
 /**
@@ -75,7 +83,7 @@ function handleDisplayMessage(msg) {
     if (err && err.parentNode) err.parentNode.removeChild(err);
     return;
   }
-  if (msg.type === "SHOW_ERROR") showError(msg.message || "翻译失败");
+  if (msg.type === "SHOW_ERROR") showError(msg.message || ((browser.i18n && browser.i18n.getMessage("errorTranslateFailed")) || "Translation failed"));
 }
 
 /**

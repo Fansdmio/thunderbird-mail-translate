@@ -1,50 +1,76 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>邮件翻译设置</title>
+  <title>Mail Translate Settings</title>
   <link rel="stylesheet" href="options.css" />
 </head>
 <body>
-  <h1>邮件翻译设置</h1>
+  <h1 data-i18n="optionsHeading">Mail Translate Settings</h1>
 
   <section>
-    <h2>通用</h2>
-    <label>翻译引擎
+    <h2 data-i18n="optionsGeneral">General</h2>
+    <label>
+      <span data-i18n="optionsEngine">Translation engine</span>
       <select id="engine">
-        <option value="microsoft-free">微软翻译（默认，免配置）</option>
-        <option value="microsoft-azure">微软 Azure（需密钥）</option>
-        <option value="openai">自定义 AI（OpenAI 兼容）</option>
+        <option value="microsoft-free" data-i18n="optionsEngineMicrosoftFree">Microsoft Translator (default, no setup)</option>
+        <option value="microsoft-azure" data-i18n="optionsEngineAzure">Microsoft Azure (API key required)</option>
+        <option value="openai" data-i18n="optionsEngineOpenai">Custom AI (OpenAI-compatible)</option>
       </select>
     </label>
-    <label>目标语言
+    <label>
+      <span data-i18n="optionsTargetLang">Target language</span>
       <select id="targetLang"></select>
     </label>
   </section>
 
   <section id="azureSection" hidden>
-    <h2>微软 Azure</h2>
-    <label>订阅密钥 <input id="azureKey" type="password" autocomplete="off" /></label>
-    <label>区域 <input id="azureRegion" placeholder="eastasia" /></label>
+    <h2 data-i18n="optionsAzure">Microsoft Azure</h2>
+    <label>
+      <span data-i18n="optionsAzureKey">Subscription key</span>
+      <input id="azureKey" type="password" autocomplete="off" />
+    </label>
+    <label>
+      <span data-i18n="optionsAzureRegion">Region</span>
+      <input id="azureRegion" data-i18n-placeholder="optionsAzureRegionPlaceholder" placeholder="eastasia" />
+    </label>
   </section>
 
   <section id="openaiSection" hidden>
-    <h2>自定义 AI</h2>
-    <label>Base URL <input id="openaiBaseUrl" placeholder="https://api.openai.com/v1" /></label>
-    <label>API Key <input id="openaiApiKey" type="password" autocomplete="off" /></label>
-    <label>模型 ID <input id="openaiModel" placeholder="gpt-4o-mini" /></label>
+    <h2 data-i18n="optionsOpenai">Custom AI</h2>
+    <label>
+      <span data-i18n="optionsOpenaiBaseUrl">Base URL</span>
+      <input id="openaiBaseUrl" data-i18n-placeholder="optionsOpenaiBaseUrlPlaceholder" placeholder="https://api.openai.com/v1" />
+    </label>
+    <label>
+      <span data-i18n="optionsOpenaiKey">API Key</span>
+      <input id="openaiApiKey" type="password" autocomplete="off" />
+    </label>
+    <label>
+      <span data-i18n="optionsOpenaiModel">Model ID</span>
+      <input id="openaiModel" data-i18n-placeholder="optionsOpenaiModelPlaceholder" placeholder="gpt-4o-mini" />
+    </label>
+    <p class="hint" data-i18n="optionsHostPermissionNote">
+      Custom AI requires host access to your Base URL origin.
+    </p>
   </section>
 
   <div class="actions">
-    <button id="save" type="button">保存</button>
-    <button id="test" type="button">测试连接</button>
+    <button id="save" type="button" data-i18n="optionsSave">Save</button>
+    <button id="test" type="button" data-i18n="optionsTest">Test connection</button>
     <span id="status"></span>
   </div>
 
-  <p class="hint">默认微软翻译无需密钥。邮件内容仅发送至你选择的翻译服务，密钥只保存在本机。</p>
+  <p class="hint" data-i18n="optionsHint">
+    Default Microsoft Translator needs no key. Message content is sent only to the engine you choose.
+  </p>
+  <p class="hint">
+    <a id="privacyLink" href="../../privacy.html" target="_blank" rel="noopener" data-i18n="optionsPrivacy">Privacy policy</a>
+  </p>
 
   <script src="../shared/languages.js"></script>
   <script src="../shared/settings.js"></script>
+  <script src="../shared/host-permissions.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

@@ -4,15 +4,15 @@
  */
 function getTargetLanguages() {
   return [
-    { code: "zh-Hans", label: "简体中文" },
-    { code: "zh-Hant", label: "繁体中文" },
-    { code: "en", label: "英语" },
-    { code: "ja", label: "日语" },
-    { code: "ko", label: "韩语" },
-    { code: "fr", label: "法语" },
-    { code: "de", label: "德语" },
-    { code: "es", label: "西班牙语" },
-    { code: "ru", label: "俄语" },
+    { code: "zh-Hans", label: "简体中文 / Chinese (Simplified)" },
+    { code: "zh-Hant", label: "繁体中文 / Chinese (Traditional)" },
+    { code: "en", label: "英语 / English" },
+    { code: "ja", label: "日语 / Japanese" },
+    { code: "ko", label: "韩语 / Korean" },
+    { code: "fr", label: "法语 / French" },
+    { code: "de", label: "德语 / German" },
+    { code: "es", label: "西班牙语 / Spanish" },
+    { code: "ru", label: "俄语 / Russian" },
   ];
 }
 

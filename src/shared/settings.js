@@ -30,7 +30,7 @@ function normalizeSettings(raw) {
 /**
  * 校验当前引擎所需配置是否齐全。
  * @param {object} settings 设置对象
- * @returns {{ ok: boolean, error?: string }}
+ * @returns {{ ok: boolean, error?: string, code?: string }}
  */
 function validateSettingsForEngine(settings) {
   const s = normalizeSettings(settings);
@@ -39,26 +39,67 @@ function validateSettingsForEngine(settings) {
   }
   if (s.engine === "microsoft-azure") {
     if (!s.azureKey.trim()) {
-      return { ok: false, error: "请填写 Azure 订阅密钥" };
+      return {
+        ok: false,
+        code: "errorAzureKeyRequired",
+        error: "请填写 Azure 订阅密钥",
+      };
     }
     if (!s.azureRegion.trim()) {
-      return { ok: false, error: "请填写 Azure 区域（如 eastasia）" };
+      return {
+        ok: false,
+        code: "errorAzureRegionRequired",
+        error: "请填写 Azure 区域（如 eastasia）",
+      };
     }
     return { ok: true };
   }
   if (s.engine === "openai") {
     if (!s.openaiBaseUrl.trim()) {
-      return { ok: false, error: "请填写 AI 端点 Base URL" };
+      return {
+        ok: false,
+        code: "errorOpenaiBaseUrlRequired",
+        error: "请填写 AI 端点 Base URL",
+      };
+    }
+    // 基础 URL 格式预检
+    try {
+      const u = new URL(s.openaiBaseUrl);
+      if (u.protocol !== "https:" && u.protocol !== "http:") {
+        return {
+          ok: false,
+          code: "errorInvalidBaseUrl",
+          error: "Base URL 无效",
+        };
+      }
+    } catch (e) {
+      return {
+        ok: false,
+        code: "errorInvalidBaseUrl",
+        error: "Base URL 无效",
+      };
     }
     if (!s.openaiApiKey.trim()) {
-      return { ok: false, error: "请填写 API Key" };
+      return {
+        ok: false,
+        code: "errorOpenaiApiKeyRequired",
+        error: "请填写 API Key",
+      };
     }
     if (!s.openaiModel.trim()) {
-      return { ok: false, error: "请填写模型 ID" };
+      return {
+        ok: false,
+        code: "errorOpenaiModelRequired",
+        error: "请填写模型 ID",
+      };
     }
     return { ok: true };
   }
-  return { ok: false, error: "未知翻译引擎" };
+  return {
+    ok: false,
+    code: "errorUnknownEngine",
+    error: "未知翻译引擎",
+  };
 }
 
 /**

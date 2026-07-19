@@ -16,5 +16,135 @@
   },
   "actionTranslating": {
     "message": "翻译中…"
+  },
+  "optionsTitle": {
+    "message": "邮件翻译设置"
+  },
+  "optionsHeading": {
+    "message": "邮件翻译设置"
+  },
+  "optionsGeneral": {
+    "message": "通用"
+  },
+  "optionsEngine": {
+    "message": "翻译引擎"
+  },
+  "optionsEngineMicrosoftFree": {
+    "message": "微软翻译（默认，免配置）"
+  },
+  "optionsEngineAzure": {
+    "message": "微软 Azure（需密钥）"
+  },
+  "optionsEngineOpenai": {
+    "message": "自定义 AI（OpenAI 兼容）"
+  },
+  "optionsTargetLang": {
+    "message": "目标语言"
+  },
+  "optionsAzure": {
+    "message": "微软 Azure"
+  },
+  "optionsAzureKey": {
+    "message": "订阅密钥"
+  },
+  "optionsAzureRegion": {
+    "message": "区域"
+  },
+  "optionsAzureRegionPlaceholder": {
+    "message": "eastasia"
+  },
+  "optionsOpenai": {
+    "message": "自定义 AI"
+  },
+  "optionsOpenaiBaseUrl": {
+    "message": "Base URL"
+  },
+  "optionsOpenaiBaseUrlPlaceholder": {
+    "message": "https://api.openai.com/v1"
+  },
+  "optionsOpenaiKey": {
+    "message": "API Key"
+  },
+  "optionsOpenaiModel": {
+    "message": "模型 ID"
+  },
+  "optionsOpenaiModelPlaceholder": {
+    "message": "gpt-4o-mini"
+  },
+  "optionsSave": {
+    "message": "保存"
+  },
+  "optionsTest": {
+    "message": "测试连接"
+  },
+  "optionsHint": {
+    "message": "默认微软翻译无需密钥。邮件内容仅发送至你选择的翻译服务，密钥只保存在本机。"
+  },
+  "optionsPrivacy": {
+    "message": "隐私政策"
+  },
+  "optionsHostPermissionNote": {
+    "message": "自定义 AI 需要访问你填写的 Base URL 主机。保存或测试时 Thunderbird 会弹出授权。"
+  },
+  "statusSaved": {
+    "message": "已保存"
+  },
+  "statusTesting": {
+    "message": "测试中…"
+  },
+  "statusSaveFailed": {
+    "message": "保存失败"
+  },
+  "statusTestFailed": {
+    "message": "测试失败"
+  },
+  "statusTestOk": {
+    "message": "连接成功：$1",
+    "placeholders": {
+      "sample": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusPermissionDenied": {
+    "message": "未授权访问该 AI 端点主机"
+  },
+  "errorAzureKeyRequired": {
+    "message": "请填写 Azure 订阅密钥"
+  },
+  "errorAzureRegionRequired": {
+    "message": "请填写 Azure 区域（如 eastasia）"
+  },
+  "errorOpenaiBaseUrlRequired": {
+    "message": "请填写 AI 端点 Base URL"
+  },
+  "errorOpenaiApiKeyRequired": {
+    "message": "请填写 API Key"
+  },
+  "errorOpenaiModelRequired": {
+    "message": "请填写模型 ID"
+  },
+  "errorUnknownEngine": {
+    "message": "未知翻译引擎"
+  },
+  "errorInvalidBaseUrl": {
+    "message": "Base URL 无效，请使用 http(s)://主机/..."
+  },
+  "errorHostPermissionMissing": {
+    "message": "缺少 AI 端点主机权限。请打开设置重新保存并允许访问。"
+  },
+  "errorNoMessage": {
+    "message": "当前没有打开的邮件"
+  },
+  "errorTranslateFailed": {
+    "message": "翻译失败"
+  },
+  "subjectPrefix": {
+    "message": "主题：$1",
+    "placeholders": {
+      "subject": {
+        "content": "$1"
+      }
+    }
   }
 }

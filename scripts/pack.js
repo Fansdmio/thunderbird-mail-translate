@@ -12,7 +12,7 @@ const manifest = JSON.parse(
 const version = manifest.version;
 const dist = path.join(root, "dist");
 const stage = path.join(dist, "_stage");
-const INCLUDE = ["manifest.json", "README.md", "_locales", "src"];
+const INCLUDE = ["manifest.json", "README.md", "privacy.html", "_locales", "src"];
 
 /**
  * 递归复制文件或目录。
@@ -49,6 +49,10 @@ for (const rel of INCLUDE) {
   if (!fs.existsSync(from)) continue;
   copyRecursive(from, path.join(stage, rel));
 }
+
+// 不打包图标源文件（仅开发用）
+const dropSourceIcon = path.join(stage, "src", "icons", "image-476.png");
+if (fs.existsSync(dropSourceIcon)) fs.unlinkSync(dropSourceIcon);
 
 const base = "thunderbird-translate-" + version;
 const zipPath = path.join(dist, base + ".zip");

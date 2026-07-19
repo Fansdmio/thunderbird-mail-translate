@@ -149,7 +149,10 @@ function extractBodyHtml(full) {
  */
 async function getDisplayedMessageContent(tabId) {
   const message = await browser.messageDisplay.getDisplayedMessage(tabId);
-  if (!message) throw new Error("当前没有打开的邮件");
+  if (!message) throw new Error(
+    (browser.i18n && browser.i18n.getMessage("errorNoMessage")) ||
+      "No message is open"
+  );
   const full = await browser.messages.getFull(message.id);
   return {
     messageId: message.id,
@@ -234,6 +237,10 @@ async function onTranslateClicked(tab) {
 
     await setActionState(tabId, "loading");
     const settings = await loadSettings();
+    // 自定义 AI：确认主机权限（设置页保存时申请）
+    if (typeof assertOpenAIHostPermission === "function") {
+      await assertOpenAIHostPermission(settings);
+    }
     const provider = createProvider(settings);
     const translated = await translateMessageContent(provider, content, {
       targetLang: settings.targetLang,
@@ -256,7 +263,7 @@ async function onTranslateClicked(tab) {
     try {
       await sendToDisplay(tabId, {
         type: "SHOW_ERROR",
-        message: (e && e.message) || "翻译失败",
+        message: (e && e.message) || ((browser.i18n && browser.i18n.getMessage("errorTranslateFailed")) || "Translation failed"),
       });
     } catch (_) {
       console.error("翻译失败：", e);
@@ -308,13 +315,22 @@ browser.runtime.onMessage.addListener(function (msg) {
     return (async function () {
       try {
         const settings = normalizeSettings(msg.settings);
+        if (typeof assertOpenAIHostPermission === "function") {
+          await assertOpenAIHostPermission(settings);
+        }
         const provider = createProvider(settings);
         const out = await provider.translateTexts(["Hello"], {
           targetLang: settings.targetLang,
         });
         return { ok: true, sample: out[0] };
       } catch (e) {
-        return { ok: false, error: (e && e.message) || "测试失败" };
+        return {
+          ok: false,
+          error:
+            (e && e.message) ||
+            ((browser.i18n && browser.i18n.getMessage("statusTestFailed")) ||
+              "Test failed"),
+        };
       }
     })();
   }

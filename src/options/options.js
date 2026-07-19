@@ -1,4 +1,49 @@
 /**
+ * 读取 i18n 文案。
+ * @param {string} key 消息键
+ * @param {string|string[]} [subs] 占位替换
+ * @returns {string}
+ */
+function t(key, subs) {
+  try {
+    if (browser.i18n && browser.i18n.getMessage) {
+      const msg = browser.i18n.getMessage(key, subs);
+      if (msg) return msg;
+    }
+  } catch (e) {
+    // 忽略
+  }
+  return key;
+}
+
+/**
+ * 应用 data-i18n / data-i18n-placeholder 到页面。
+ */
+function applyI18n() {
+  document.title = t("optionsTitle");
+  const nodes = document.querySelectorAll("[data-i18n]");
+  for (let i = 0; i < nodes.length; i++) {
+    const el = nodes[i];
+    const key = el.getAttribute("data-i18n");
+    if (!key) continue;
+    const text = t(key);
+    if (el.tagName === "OPTION") {
+      el.textContent = text;
+    } else if (el.tagName === "TITLE") {
+      el.textContent = text;
+    } else {
+      el.textContent = text;
+    }
+  }
+  const ph = document.querySelectorAll("[data-i18n-placeholder]");
+  for (let j = 0; j < ph.length; j++) {
+    const el2 = ph[j];
+    const key2 = el2.getAttribute("data-i18n-placeholder");
+    if (key2) el2.setAttribute("placeholder", t(key2));
+  }
+}
+
+/**
  * 根据引擎显示对应配置区。
  */
 function updateSections() {
@@ -50,9 +95,37 @@ function setStatus(text, isError) {
 }
 
 /**
+ * 将校验错误转为可读文案。
+ * @param {{ ok: boolean, code?: string, error?: string }} check 校验结果
+ * @returns {string}
+ */
+function formatValidationError(check) {
+  if (check && check.code) {
+    const msg = t(check.code);
+    if (msg && msg !== check.code) return msg;
+  }
+  return (check && check.error) || t("statusSaveFailed");
+}
+
+/**
+ * 保存/测试前为自定义 AI 申请主机权限。
+ * @param {object} settings 设置
+ * @returns {Promise<{ ok: boolean, error?: string }>}
+ */
+async function ensureOpenAIPermission(settings) {
+  if (settings.engine !== "openai") return { ok: true };
+  const result = await requestHostPermission(settings.openaiBaseUrl);
+  if (result.ok) return { ok: true };
+  const code = result.errorCode || "statusPermissionDenied";
+  return { ok: false, error: t(code) };
+}
+
+/**
  * 初始化设置页。
  */
 async function init() {
+  applyI18n();
+
   // 填充语言列表
   const select = document.getElementById("targetLang");
   const langs = getTargetLanguages();
@@ -77,7 +150,12 @@ async function init() {
     const settings = readFormSettings();
     const check = validateSettingsForEngine(settings);
     if (!check.ok) {
-      setStatus(check.error, true);
+      setStatus(formatValidationError(check), true);
+      return;
+    }
+    const perm = await ensureOpenAIPermission(settings);
+    if (!perm.ok) {
+      setStatus(perm.error || t("statusPermissionDenied"), true);
       return;
     }
     try {
@@ -85,9 +163,9 @@ async function init() {
         type: "SAVE_SETTINGS",
         settings: settings,
       });
-      setStatus("已保存", false);
+      setStatus(t("statusSaved"), false);
     } catch (e) {
-      setStatus((e && e.message) || "保存失败", true);
+      setStatus((e && e.message) || t("statusSaveFailed"), true);
     }
   });
 
@@ -95,22 +173,27 @@ async function init() {
     const settings = readFormSettings();
     const check = validateSettingsForEngine(settings);
     if (!check.ok) {
-      setStatus(check.error, true);
+      setStatus(formatValidationError(check), true);
       return;
     }
-    setStatus("测试中…", false);
+    const perm = await ensureOpenAIPermission(settings);
+    if (!perm.ok) {
+      setStatus(perm.error || t("statusPermissionDenied"), true);
+      return;
+    }
+    setStatus(t("statusTesting"), false);
     try {
       const result = await browser.runtime.sendMessage({
         type: "TEST_ENGINE",
         settings: settings,
       });
       if (result && result.ok) {
-        setStatus("连接成功：" + (result.sample || ""), false);
+        setStatus(t("statusTestOk", [result.sample || ""]), false);
       } else {
-        setStatus((result && result.error) || "测试失败", true);
+        setStatus((result && result.error) || t("statusTestFailed"), true);
       }
     } catch (e) {
-      setStatus((e && e.message) || "测试失败", true);
+      setStatus((e && e.message) || t("statusTestFailed"), true);
     }
   });
 }

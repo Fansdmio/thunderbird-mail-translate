@@ -1,11 +1,11 @@
 {
   "name": "thunderbird-translate",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "Thunderbird 邮件全文替换翻译扩展",
   "scripts": {
-    "test": "node --test tests/settings.test.js tests/html-text.test.js tests/translate-chunk.test.js tests/openai-batch.test.js",
-    "lint": "node --check src/shared/html-text.js && node --check src/shared/settings.js && node --check src/background/background.js && node --check src/content/message-display.js",
+    "test": "node --test tests/settings.test.js tests/html-text.test.js tests/translate-chunk.test.js tests/openai-batch.test.js tests/host-permissions.test.js",
+    "lint": "node --check src/shared/html-text.js && node --check src/shared/settings.js && node --check src/shared/host-permissions.js && node --check src/background/background.js && node --check src/content/message-display.js",
     "pack": "node scripts/pack.js",
     "icons": "python scripts/generate-icons.py"
   },
