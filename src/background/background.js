@@ -320,4 +320,92 @@ browser.runtime.onMessage.addListener(function (msg) {
   }
 });
 
+
+/**
+ * 解析 CSS 颜色为 RGB。
+ * @param {string} color 颜色字符串
+ * @returns {{r:number,g:number,b:number}|null}
+ */
+function parseCssColor(color) {
+  if (!color || typeof color !== "string") return null;
+  const s = color.trim();
+  const hex = s.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hex) {
+    let h = hex[1];
+    if (h.length === 3) {
+      h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    }
+    return {
+      r: parseInt(h.slice(0, 2), 16),
+      g: parseInt(h.slice(2, 4), 16),
+      b: parseInt(h.slice(4, 6), 16),
+    };
+  }
+  const rgb = s.match(/^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)/i);
+  if (rgb) {
+    return {
+      r: Number(rgb[1]),
+      g: Number(rgb[2]),
+      b: Number(rgb[3]),
+    };
+  }
+  return null;
+}
+
+/**
+ * 判断是否为暗色主题（根据工具栏/窗框亮度）。
+ * @returns {Promise<boolean>}
+ */
+async function isDarkTheme() {
+  try {
+    if (!browser.theme || !browser.theme.getCurrent) return false;
+    const theme = await browser.theme.getCurrent();
+    const colors = theme && theme.colors;
+    if (!colors) return false;
+    const candidate =
+      colors.toolbar || colors.frame || colors.sidebar || colors.popup;
+    const rgb = parseCssColor(candidate);
+    if (!rgb) return false;
+    // 相对亮度
+    const lum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+    return lum < 0.45;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * 按主题切换工具栏图标（补强 theme_icons）。
+ */
+async function applyToolbarIcons() {
+  try {
+    const dark = await isDarkTheme();
+    // 暗色主题用蓝底白标；亮色主题用浅底深标
+    const path = dark
+      ? {
+          16: "src/icons/icon-light-16.png",
+          32: "src/icons/icon-light-32.png",
+          48: "src/icons/icon-light-48.png",
+          64: "src/icons/icon-light-64.png",
+        }
+      : {
+          16: "src/icons/icon-16.png",
+          32: "src/icons/icon-32.png",
+          48: "src/icons/icon-48.png",
+          64: "src/icons/icon-64.png",
+        };
+    await browser.messageDisplayAction.setIcon({ path: path });
+  } catch (e) {
+    console.warn("切换主题图标失败", e);
+  }
+}
+
 registerMessageDisplayScripts();
+applyToolbarIcons();
+if (browser.theme && browser.theme.onUpdated) {
+  browser.theme.onUpdated.addListener(function () {
+    applyToolbarIcons();
+  });
+}
+
+

@@ -2,16 +2,20 @@
  * 将文本列表按总字符上限分块。
  * @param {string[]} texts 文本列表
  * @param {number} maxChars 每块最大字符数
+ * @param {number} [maxItems] 每块最大条数
  * @returns {string[][]} 分块结果
  */
-function chunkTexts(texts, maxChars) {
+function chunkTexts(texts, maxChars, maxItems) {
   if (maxChars == null) maxChars = 4000;
+  if (maxItems == null) maxItems = 40;
   const chunks = [];
   let current = [];
   let size = 0;
   for (const t of texts) {
     const len = t.length;
-    if (current.length && size + len > maxChars) {
+    const overflowChars = current.length && size + len > maxChars;
+    const overflowItems = current.length >= maxItems;
+    if (overflowChars || overflowItems) {
       chunks.push(current);
       current = [];
       size = 0;
@@ -25,14 +29,19 @@ function chunkTexts(texts, maxChars) {
 
 /**
  * 使用 provider 翻译全部片段。
- * @param {{ translateTexts: Function }} provider 引擎
+ * @param {{ translateTexts: Function, maxChunkChars?: number, maxChunkItems?: number }} provider 引擎
  * @param {string[]} texts 文本
  * @param {{ targetLang: string }} options 选项
  * @returns {Promise<string[]>}
  */
 async function translateAllTexts(provider, texts, options) {
   if (!texts.length) return [];
-  const chunks = chunkTexts(texts);
+  // 外层粗分块；AI 引擎可声明更大 maxChunk* 以减少请求次数
+  const maxChars =
+    provider && provider.maxChunkChars != null ? provider.maxChunkChars : 4000;
+  const maxItems =
+    provider && provider.maxChunkItems != null ? provider.maxChunkItems : 40;
+  const chunks = chunkTexts(texts, maxChars, maxItems);
   const out = [];
   for (const chunk of chunks) {
     const part = await provider.translateTexts(chunk, options);

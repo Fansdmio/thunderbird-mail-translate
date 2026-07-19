@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "default_locale": "zh_CN",
   "applications": {
     "gecko": {
@@ -39,7 +39,46 @@
   },
   "message_display_action": {
     "default_title": "__MSG_actionTranslate__",
-    "default_icon": "src/icons/icon-48.png"
+    "default_icon": {
+      "16": "src/icons/icon-16.png",
+      "32": "src/icons/icon-32.png",
+      "48": "src/icons/icon-48.png",
+      "64": "src/icons/icon-64.png",
+      "96": "src/icons/icon-96.png",
+      "128": "src/icons/icon-128.png"
+    },
+    "theme_icons": [
+      {
+        "light": "src/icons/icon-light-16.png",
+        "dark": "src/icons/icon-16.png",
+        "size": 16
+      },
+      {
+        "light": "src/icons/icon-light-32.png",
+        "dark": "src/icons/icon-32.png",
+        "size": 32
+      },
+      {
+        "light": "src/icons/icon-light-48.png",
+        "dark": "src/icons/icon-48.png",
+        "size": 48
+      },
+      {
+        "light": "src/icons/icon-light-64.png",
+        "dark": "src/icons/icon-64.png",
+        "size": 64
+      },
+      {
+        "light": "src/icons/icon-light-96.png",
+        "dark": "src/icons/icon-96.png",
+        "size": 96
+      },
+      {
+        "light": "src/icons/icon-light-128.png",
+        "dark": "src/icons/icon-128.png",
+        "size": 128
+      }
+    ]
   },
   "message_display_scripts": [
     {
@@ -47,6 +86,12 @@
     }
   ],
   "icons": {
-    "48": "src/icons/icon-48.png"
+    "16": "src/icons/icon-16.png",
+    "32": "src/icons/icon-32.png",
+    "48": "src/icons/icon-48.png",
+    "64": "src/icons/icon-64.png",
+    "96": "src/icons/icon-96.png",
+    "128": "src/icons/icon-store-128.png"
   }
 }
+
