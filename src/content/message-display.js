@@ -3,10 +3,13 @@
  * @returns {Document}
  */
 function getTargetDocument() {
-  // 阅读窗可能是 iframe
-  const iframe = document.querySelector("iframe");
-  if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
-    return iframe.contentDocument;
+  try {
+    const iframe = document.querySelector("iframe");
+    if (iframe && iframe.contentDocument && iframe.contentDocument.body) {
+      return iframe.contentDocument;
+    }
+  } catch (e) {
+    // 跨域 iframe 忽略
   }
   return document;
 }
@@ -27,24 +30,14 @@ function applyBodyHtml(html) {
  * @param {string} subject 主题
  */
 function applySubject(subject) {
-  const doc = getTargetDocument();
-  const el =
-    document.querySelector(".subject") ||
-    document.getElementById("expandedsubjectBox") ||
-    doc.querySelector(".subject");
-  if (el) {
-    el.textContent = subject;
-  }
-  // 回退：正文顶部横幅
   let banner = document.getElementById("tb-translate-subject-banner");
   if (!banner) {
     banner = document.createElement("div");
     banner.id = "tb-translate-subject-banner";
     banner.style.cssText =
-      "padding:8px 12px;background:#e8f0fe;border-bottom:1px solid #c5d4f0;font-weight:600;font-family:sans-serif;";
-    const host = document.body || (doc && doc.body);
-    if (host) {
-      host.insertBefore(banner, host.firstChild);
+      "padding:8px 12px;background:#e8f0fe;border-bottom:1px solid #c5d4f0;font-weight:600;font-family:sans-serif;position:relative;z-index:9999;";
+    if (document.body) {
+      document.body.insertBefore(banner, document.body.firstChild);
     }
   }
   banner.textContent = "主题：" + subject;
@@ -60,7 +53,7 @@ function showError(message) {
     bar = document.createElement("div");
     bar.id = "tb-translate-error";
     bar.style.cssText =
-      "padding:8px 12px;background:#fdecea;color:#b71c1c;border-bottom:1px solid #f5c6cb;font-family:sans-serif;";
+      "padding:8px 12px;background:#fdecea;color:#b71c1c;border-bottom:1px solid #f5c6cb;font-family:sans-serif;position:relative;z-index:9999;";
     if (document.body) {
       document.body.insertBefore(bar, document.body.firstChild);
     }
@@ -88,4 +81,19 @@ function handleDisplayMessage(msg) {
   }
 }
 
-browser.runtime.onMessage.addListener(handleDisplayMessage);
+// 常规 runtime 消息（若通道可用）
+if (typeof browser !== "undefined" && browser.runtime && browser.runtime.onMessage) {
+  browser.runtime.onMessage.addListener(handleDisplayMessage);
+}
+
+// storage 桥接：后台写 __tbTranslateApply 时应用
+if (typeof browser !== "undefined" && browser.storage && browser.storage.onChanged) {
+  browser.storage.onChanged.addListener(function (changes, area) {
+    if (area !== "local") return;
+    if (!changes.__tbTranslateApply || !changes.__tbTranslateApply.newValue) return;
+    const data = changes.__tbTranslateApply.newValue;
+    if (data && data.payload) {
+      handleDisplayMessage(data.payload);
+    }
+  });
+}
