@@ -4,6 +4,9 @@ const cache = new Map();
 /** 阅读窗 content script 端口：tabId -> Port */
 const displayPorts = new Map();
 
+/** 每个标签当前显示的邮件 ID：tabId -> messageId */
+const currentMessageByTab = new Map();
+
 /**
  * 生成缓存键。
  * @param {number} tabId 标签 ID
@@ -37,6 +40,56 @@ async function registerMessageDisplayScripts() {
  * @param {number} tabId 标签 ID
  * @param {"idle"|"loading"|"translated"|"original"} state 状态
  */
+
+/**
+ * 从 tab 参数解析 tabId（兼容 number / Tab 对象）。
+ * @param {number|object} tabOrId 标签或 ID
+ * @returns {number|null}
+ */
+function resolveTabId(tabOrId) {
+  if (tabOrId == null) return null;
+  if (typeof tabOrId === "number") return tabOrId;
+  if (typeof tabOrId === "object" && tabOrId.id != null) return tabOrId.id;
+  return null;
+}
+
+/**
+ * 根据缓存同步某标签按钮状态。
+ * 切换邮件后阅读窗 DOM 会恢复原文，因此若有缓存则视为 original 视图。
+ * @param {number} tabId 标签 ID
+ * @param {number|string|null} messageId 邮件 ID
+ */
+async function syncActionForDisplayedMessage(tabId, messageId) {
+  if (tabId == null) return;
+  if (messageId == null) {
+    currentMessageByTab.delete(tabId);
+    await setActionState(tabId, "idle");
+    return;
+  }
+  currentMessageByTab.set(tabId, messageId);
+  const entry = cache.get(cacheKey(tabId, messageId));
+  if (entry && entry.translated) {
+    // 新打开的邮件始终是原文 DOM，缓存仍可用一键恢复译文
+    entry.view = "original";
+    await setActionState(tabId, "original");
+    return;
+  }
+  await setActionState(tabId, "idle");
+}
+
+/**
+ * 清理指定标签的翻译缓存与状态。
+ * @param {number} tabId 标签 ID
+ */
+function clearTabState(tabId) {
+  if (tabId == null) return;
+  currentMessageByTab.delete(tabId);
+  const prefix = tabId + ":";
+  Array.from(cache.keys()).forEach(function (key) {
+    if (String(key).indexOf(prefix) === 0) cache.delete(key);
+  });
+  displayPorts.delete(tabId);
+}
 async function setActionState(tabId, state) {
   const titles = {
     idle: (browser.i18n && browser.i18n.getMessage("actionTranslate")) || "翻译",
@@ -225,6 +278,7 @@ browser.messageDisplayAction.onClicked.addListener(async (tab) => {
   const tabId = tab.id;
   try {
     const content = await getDisplayedMessageContent(tabId);
+    currentMessageByTab.set(tabId, content.messageId);
     const key = cacheKey(tabId, content.messageId);
     const entry = cache.get(key);
 
@@ -313,6 +367,27 @@ browser.runtime.onMessage.addListener((msg) => {
     return Promise.resolve({ ok: true });
   }
 });
+
+
+// 切换/打开邮件时同步按钮文案
+if (browser.messageDisplay && browser.messageDisplay.onMessageDisplayed) {
+  browser.messageDisplay.onMessageDisplayed.addListener(async function (tab, message) {
+    const tabId = resolveTabId(tab);
+    const messageId = message && message.id != null ? message.id : null;
+    try {
+      await syncActionForDisplayedMessage(tabId, messageId);
+    } catch (e) {
+      console.warn("同步按钮状态失败", e);
+    }
+  });
+}
+
+// 标签关闭时清理缓存，避免状态串台
+if (browser.tabs && browser.tabs.onRemoved) {
+  browser.tabs.onRemoved.addListener(function (tabId) {
+    clearTabState(tabId);
+  });
+}
 
 // 启动注册
 registerMessageDisplayScripts();
