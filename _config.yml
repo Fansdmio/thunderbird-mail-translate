@@ -1,0 +1,10 @@
+# GitHub Pages 兜底配置（仓库根已有 .nojekyll 时通常不走 Jekyll）
+# 若仍被 Jekyll 处理，排除含 TypeScript 花括号示例的内部文档
+exclude:
+  - docs/superpowers
+  - node_modules
+  - dist
+  - tests
+  - .venv
+  - scripts
+  - package-lock.json
