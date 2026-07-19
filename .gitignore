@@ -1,0 +1,7 @@
+node_modules/
+.superpowers/
+*.xpi
+.web-extension-id
+web-ext-artifacts/
+.DS_Store
+Thumbs.db
