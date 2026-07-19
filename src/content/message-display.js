@@ -9,7 +9,7 @@ function getTargetDocument() {
       return iframe.contentDocument;
     }
   } catch (e) {
-    // 跨域 iframe 忽略
+    // 忽略
   }
   return document;
 }
@@ -20,13 +20,13 @@ function getTargetDocument() {
  */
 function applyBodyHtml(html) {
   const doc = getTargetDocument();
-  if (doc.body) {
+  if (doc && doc.body) {
     doc.body.innerHTML = html;
   }
 }
 
 /**
- * 尝试更新可见主题显示。
+ * 在正文顶部显示主题译文横幅。
  * @param {string} subject 主题
  */
 function applySubject(subject) {
@@ -40,7 +40,7 @@ function applySubject(subject) {
       document.body.insertBefore(banner, document.body.firstChild);
     }
   }
-  banner.textContent = "主题：" + subject;
+  if (banner) banner.textContent = "主题：" + subject;
 }
 
 /**
@@ -58,14 +58,14 @@ function showError(message) {
       document.body.insertBefore(bar, document.body.firstChild);
     }
   }
-  bar.textContent = message;
+  if (bar) bar.textContent = message;
   setTimeout(function () {
     if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
   }, 8000);
 }
 
 /**
- * 处理来自后台的显示指令。
+ * 处理显示指令。
  * @param {object} msg 消息
  */
 function handleDisplayMessage(msg) {
@@ -75,25 +75,53 @@ function handleDisplayMessage(msg) {
     if (msg.subject != null) applySubject(msg.subject);
     const err = document.getElementById("tb-translate-error");
     if (err && err.parentNode) err.parentNode.removeChild(err);
+    return;
   }
   if (msg.type === "SHOW_ERROR") {
     showError(msg.message || "翻译失败");
   }
 }
 
-// 常规 runtime 消息（若通道可用）
-if (typeof browser !== "undefined" && browser.runtime && browser.runtime.onMessage) {
-  browser.runtime.onMessage.addListener(handleDisplayMessage);
+/**
+ * 建立与后台的长连接，并监听指令。
+ */
+function connectBackground() {
+  try {
+    const port = browser.runtime.connect({ name: "tb-translate-display" });
+    port.onMessage.addListener(handleDisplayMessage);
+    port.onDisconnect.addListener(function () {
+      // 邮件切换后可能断开，稍后重连
+      setTimeout(connectBackground, 500);
+    });
+  } catch (e) {
+    console.warn("connectBackground failed", e);
+    setTimeout(connectBackground, 1000);
+  }
 }
 
-// storage 桥接：后台写 __tbTranslateApply 时应用
+// runtime 消息（备用）
+if (typeof browser !== "undefined" && browser.runtime && browser.runtime.onMessage) {
+  browser.runtime.onMessage.addListener(function (msg) {
+    handleDisplayMessage(msg);
+  });
+}
+
+// storage 桥接（备用）
 if (typeof browser !== "undefined" && browser.storage && browser.storage.onChanged) {
   browser.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
     if (!changes.__tbTranslateApply || !changes.__tbTranslateApply.newValue) return;
     const data = changes.__tbTranslateApply.newValue;
-    if (data && data.payload) {
-      handleDisplayMessage(data.payload);
-    }
+    if (data && data.payload) handleDisplayMessage(data.payload);
   });
 }
+
+// 启动
+connectBackground();
+try {
+  browser.runtime.sendMessage({ type: "DISPLAY_READY" });
+} catch (e) {
+  // 忽略
+}
+
+console.log("tb-translate message-display script loaded");

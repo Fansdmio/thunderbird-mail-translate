@@ -1,6 +1,9 @@
 /** 翻译结果缓存：key = tabId:messageId */
 const cache = new Map();
 
+/** 阅读窗 content script 端口：tabId -> Port */
+const displayPorts = new Map();
+
 /**
  * 生成缓存键。
  * @param {number} tabId 标签 ID
@@ -9,6 +12,24 @@ const cache = new Map();
  */
 function cacheKey(tabId, messageId) {
   return tabId + ":" + messageId;
+}
+
+/**
+ * 启动时注册阅读窗脚本（需要 messagesModify）。
+ * manifest 里也有声明，这里再 register 一次提高兼容性。
+ */
+async function registerMessageDisplayScripts() {
+  try {
+    if (browser.messageDisplayScripts && browser.messageDisplayScripts.register) {
+      await browser.messageDisplayScripts.register({
+        js: [{ file: "src/content/message-display.js" }],
+      });
+      console.log("messageDisplayScripts.register 成功");
+    }
+  } catch (e) {
+    // 若 manifest 已注入，重复注册可能报错，忽略
+    console.warn("messageDisplayScripts.register:", (e && e.message) || e);
+  }
 }
 
 /**
@@ -96,98 +117,42 @@ async function getDisplayedMessageContent(tabId) {
 }
 
 /**
- * 生成在阅读窗内执行的注入脚本（字符串）。
- * 不依赖 content script 的 onMessage 通道。
- * @param {object} payload 显示指令
- * @returns {string}
- */
-function buildInjectCode(payload) {
-  // 使用 JSON 安全嵌入
-  const data = JSON.stringify(payload);
-  return (
-    "(function(){\n" +
-    "  var msg = " +
-    data +
-    ";\n" +
-    "  function getDoc(){\n" +
-    "    try {\n" +
-    "      var iframe = document.querySelector('iframe');\n" +
-    "      if (iframe && iframe.contentDocument && iframe.contentDocument.body) {\n" +
-    "        return iframe.contentDocument;\n" +
-    "      }\n" +
-    "    } catch (e) {}\n" +
-    "    return document;\n" +
-    "  }\n" +
-    "  function applyBody(html){\n" +
-    "    var doc = getDoc();\n" +
-    "    if (doc && doc.body) doc.body.innerHTML = html;\n" +
-    "  }\n" +
-    "  function applySubject(subject){\n" +
-    "    var banner = document.getElementById('tb-translate-subject-banner');\n" +
-    "    if (!banner) {\n" +
-    "      banner = document.createElement('div');\n" +
-    "      banner.id = 'tb-translate-subject-banner';\n" +
-    "      banner.style.cssText = 'padding:8px 12px;background:#e8f0fe;border-bottom:1px solid #c5d4f0;font-weight:600;font-family:sans-serif;position:relative;z-index:9999;';\n" +
-    "      var host = document.body;\n" +
-    "      if (host) host.insertBefore(banner, host.firstChild);\n" +
-    "    }\n" +
-    "    if (banner) banner.textContent = '主题：' + subject;\n" +
-    "  }\n" +
-    "  function showError(message){\n" +
-    "    var bar = document.getElementById('tb-translate-error');\n" +
-    "    if (!bar) {\n" +
-    "      bar = document.createElement('div');\n" +
-    "      bar.id = 'tb-translate-error';\n" +
-    "      bar.style.cssText = 'padding:8px 12px;background:#fdecea;color:#b71c1c;border-bottom:1px solid #f5c6cb;font-family:sans-serif;position:relative;z-index:9999;';\n" +
-    "      if (document.body) document.body.insertBefore(bar, document.body.firstChild);\n" +
-    "    }\n" +
-    "    if (bar) bar.textContent = message;\n" +
-    "    setTimeout(function(){ if (bar && bar.parentNode) bar.parentNode.removeChild(bar); }, 8000);\n" +
-    "  }\n" +
-    "  if (!msg || !msg.type) return;\n" +
-    "  if (msg.type === 'APPLY_TRANSLATION' || msg.type === 'APPLY_ORIGINAL') {\n" +
-    "    if (msg.html != null) applyBody(msg.html);\n" +
-    "    if (msg.subject != null) applySubject(msg.subject);\n" +
-    "    var err = document.getElementById('tb-translate-error');\n" +
-    "    if (err && err.parentNode) err.parentNode.removeChild(err);\n" +
-    "  }\n" +
-    "  if (msg.type === 'SHOW_ERROR') showError(msg.message || '翻译失败');\n" +
-    "})();"
-  );
-}
-
-/**
  * 向阅读窗应用显示指令。
- * 优先 executeScript 直注 DOM；再尝试 sendMessage；最后 storage 桥接。
+ * 优先 Port，其次 tabs.sendMessage，最后 storage 桥接。
  * @param {number} tabId 标签 ID
  * @param {object} payload 消息
  */
 async function sendToDisplay(tabId, payload) {
   const errors = [];
 
-  // 1) 直接注入执行（不依赖 content script 是否已加载）
-  try {
-    if (browser.tabs && browser.tabs.executeScript) {
-      await browser.tabs.executeScript(tabId, {
-        code: buildInjectCode(payload),
-      });
+  // 1) 长连接 Port（content 启动时 connect）
+  const port = displayPorts.get(tabId);
+  if (port) {
+    try {
+      port.postMessage(payload);
       return;
+    } catch (e) {
+      errors.push("port: " + ((e && e.message) || e));
+      displayPorts.delete(tabId);
     }
-  } catch (e) {
-    errors.push("executeScript: " + ((e && e.message) || e));
   }
 
-  // 2) 尝试先注入常驻 content 脚本，再 sendMessage
-  try {
-    if (browser.tabs && browser.tabs.executeScript) {
-      await browser.tabs.executeScript(tabId, {
-        file: "src/content/message-display.js",
-      });
-    }
-  } catch (e) {
-    errors.push("inject file: " + ((e && e.message) || e));
+  // 2) 广播给所有阅读窗端口（tabId 可能不一致时的兜底）
+  if (displayPorts.size > 0) {
+    let any = false;
+    displayPorts.forEach(function (p, id) {
+      try {
+        p.postMessage(Object.assign({ _targetTabId: tabId }, payload));
+        any = true;
+      } catch (e) {
+        errors.push("port#" + id + ": " + ((e && e.message) || e));
+        displayPorts.delete(id);
+      }
+    });
+    if (any) return;
   }
 
+  // 3) tabs.sendMessage（脚本已注入时可用）
   try {
     await browser.tabs.sendMessage(tabId, payload);
     return;
@@ -195,7 +160,7 @@ async function sendToDisplay(tabId, payload) {
     errors.push("sendMessage: " + ((e && e.message) || e));
   }
 
-  // 3) storage 桥接：content script / 后续注入脚本可监听
+  // 4) storage 桥接：content 监听 storage.onChanged
   try {
     await browser.storage.local.set({
       __tbTranslateApply: {
@@ -204,15 +169,17 @@ async function sendToDisplay(tabId, payload) {
         payload: payload,
       },
     });
-    // 再尝试 executeScript 读取 storage 并应用（双保险）
-    try {
-      await browser.tabs.executeScript(tabId, {
-        code: buildInjectCode(payload),
-      });
-      return;
-    } catch (e2) {
-      errors.push("executeScript after storage: " + ((e2 && e2.message) || e2));
+    // 给 content 一点时间处理
+    await new Promise(function (r) {
+      setTimeout(r, 50);
+    });
+    // 若仍无端口，说明阅读窗脚本未注入
+    if (displayPorts.size === 0) {
+      throw new Error(
+        "阅读窗脚本未注入。请确认已授权 messagesModify，并关闭邮件后重新打开。"
+      );
     }
+    return;
   } catch (e) {
     errors.push("storage: " + ((e && e.message) || e));
   }
@@ -223,6 +190,36 @@ async function sendToDisplay(tabId, payload) {
   );
 }
 
+// 阅读窗 content 建立长连接
+browser.runtime.onConnect.addListener(function (port) {
+  if (!port || port.name !== "tb-translate-display") return;
+  const tabId =
+    port.sender && port.sender.tab && port.sender.tab.id != null
+      ? port.sender.tab.id
+      : null;
+
+  if (tabId != null) {
+    displayPorts.set(tabId, port);
+    console.log("阅读窗已连接 tabId=", tabId);
+  } else {
+    // 无 tab 信息时用临时键，广播时仍可用
+    const fallbackKey = "unknown-" + Date.now();
+    displayPorts.set(fallbackKey, port);
+    console.log("阅读窗已连接（无 tabId）", fallbackKey);
+  }
+
+  port.onDisconnect.addListener(function () {
+    if (tabId != null) {
+      displayPorts.delete(tabId);
+    } else {
+      // 清理 unknown 端口
+      displayPorts.forEach(function (p, k) {
+        if (p === port) displayPorts.delete(k);
+      });
+    }
+  });
+});
+
 // 工具栏点击：翻译 / 切换原文译文
 browser.messageDisplayAction.onClicked.addListener(async (tab) => {
   const tabId = tab.id;
@@ -231,7 +228,6 @@ browser.messageDisplayAction.onClicked.addListener(async (tab) => {
     const key = cacheKey(tabId, content.messageId);
     const entry = cache.get(key);
 
-    // 已显示译文 → 切回原文
     if (entry && entry.view === "translated") {
       await sendToDisplay(tabId, {
         type: "APPLY_ORIGINAL",
@@ -243,7 +239,6 @@ browser.messageDisplayAction.onClicked.addListener(async (tab) => {
       return;
     }
 
-    // 已显示原文且有缓存译文 → 再显示译文
     if (entry && entry.view === "original" && entry.translated) {
       await sendToDisplay(tabId, {
         type: "APPLY_TRANSLATION",
@@ -255,7 +250,6 @@ browser.messageDisplayAction.onClicked.addListener(async (tab) => {
       return;
     }
 
-    // 首次翻译
     await setActionState(tabId, "loading");
     const settings = await loadSettings();
     const provider = createProvider(settings);
@@ -283,7 +277,6 @@ browser.messageDisplayAction.onClicked.addListener(async (tab) => {
         message: (e && e.message) || "翻译失败",
       });
     } catch (_) {
-      // 阅读窗写不进去时，至少把错误打到控制台
       console.error("翻译失败且无法在阅读窗提示：", e);
     }
   }
@@ -314,4 +307,12 @@ browser.runtime.onMessage.addListener((msg) => {
       }
     })();
   }
+  // content 就绪心跳
+  if (msg.type === "DISPLAY_READY") {
+    console.log("DISPLAY_READY from tab", msg.tabId);
+    return Promise.resolve({ ok: true });
+  }
 });
+
+// 启动注册
+registerMessageDisplayScripts();
