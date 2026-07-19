@@ -11,7 +11,7 @@
 - [ ] 将 `privacy.html` 发布到可公网访问的 HTTPS URL（ATN 隐私政策字段需要）
 - [ ] 准备 2–4 张商店截图（PNG）
 - [ ] 注册 ATN 开发者账号：https://addons.thunderbird.net/en-US/developers/
-- [ ] 上传 `dist/thunderbird-translate-0.1.6.xpi`
+- [ ] 上传 `dist/thunderbird-translate-0.1.7.xpi`
 - [ ] 粘贴 ATN-LISTING.md 中的 Summary / Description
 - [ ] 审核备注粘贴 Listing 中的 Reviewer notes
 - [ ] 选择 Listed（公开）或 Unlisted（仅链接安装）
@@ -26,7 +26,7 @@ npm run pack
 
 安装包路径：
 
-- `dist/thunderbird-translate-0.1.6.xpi`
+- `dist/thunderbird-translate-0.1.7.xpi`
 
 ## 开发加载注意
 
@@ -52,4 +52,17 @@ npm run pack
 
 ## 版本
 
-当前上架目标版本：**0.1.6**
+当前上架目标版本：**0.1.7**
+
+## ATN / web-ext 校验警告说明
+
+提交页或 `web-ext lint` 若按 **Firefox** 规则扫描，会出现大量“无效权限 / API 不受支持”。对 **Thunderbird MailExtension** 而言多数为误报，可忽略：
+
+| 提示 | 处理 |
+|------|------|
+| `messagesRead` / `messagesModify` 无效 | Thunderbird 专用权限，**必须保留** |
+| `messageDisplay*` / `messages.getFull` 不受支持 | Thunderbird API，Firefox 没有，**正常** |
+| `applications` 已弃用 | 已改用 `browser_specific_settings` |
+| `innerHTML` 不安全赋值 | 阅读窗全文替换译文所需；内容来自本机邮件 + 翻译结果，不执行远程脚本 |
+
+以 ATN 选择 **Thunderbird** 目标提交为准，不要用 Firefox AMO 的规则硬卡。

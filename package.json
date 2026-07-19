@@ -1,6 +1,6 @@
 {
   "name": "thunderbird-translate",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "Thunderbird 邮件全文替换翻译扩展",
   "scripts": {

@@ -9,7 +9,7 @@
 | 名称 (en) | Mail Translate |
 | 名称 (zh) | 邮件翻译 |
 | 扩展 ID | `mail-translate@uuyo.pw` |
-| 当前版本 | 0.1.6 |
+| 当前版本 | 0.1.7 |
 | 最低版本 | Thunderbird 128.0 |
 | 分类建议 | Messages and News / Language tools |
 | 隐私政策 URL | 将仓库内 `privacy.html` 托管到你的 HTTPS 站点后填入（必填） |
