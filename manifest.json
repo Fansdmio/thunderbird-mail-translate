@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "default_locale": "zh_CN",
   "applications": {
     "gecko": {
@@ -14,15 +14,11 @@
     "messagesRead",
     "messagesModify",
     "storage",
-    "menus",
     "tabs",
-    "activeTab",
-    "https://*.microsoft.com/*",
-    "https://*.bing.com/*",
-    "https://api.cognitive.microsofttranslator.com/*",
-    "https://*.cognitive.microsofttranslator.com/*",
     "https://edge.microsoft.com/*",
     "https://api-edge.cognitive.microsofttranslator.com/*",
+    "https://api.cognitive.microsofttranslator.com/*",
+    "https://*.cognitive.microsofttranslator.com/*",
     "<all_urls>"
   ],
   "background": {
@@ -47,9 +43,7 @@
   },
   "message_display_scripts": [
     {
-      "js": [
-        "src/content/message-display.js"
-      ]
+      "js": ["src/content/message-display.js"]
     }
   ],
   "icons": {

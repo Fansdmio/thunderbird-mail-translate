@@ -1,6 +1,6 @@
 node_modules/
 .superpowers/
-*.xpi
+dist/_stage/
 .web-extension-id
 web-ext-artifacts/
 .DS_Store
