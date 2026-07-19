@@ -1,0 +1,16 @@
+{
+  "name": "thunderbird-translate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Thunderbird 邮件全文替换翻译扩展",
+  "scripts": {
+    "test": "node --test tests/settings.test.js tests/html-text.test.js tests/translate-chunk.test.js",
+    "lint": "node --check src/shared/html-text.js && node --check src/shared/settings.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.13"
+  }
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>邮件翻译设置</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <h1>邮件翻译设置</h1>
+
+  <section>
+    <h2>通用</h2>
+    <label>翻译引擎
+      <select id="engine">
+        <option value="microsoft-free">微软翻译（默认，免配置）</option>
+        <option value="microsoft-azure">微软 Azure（需密钥）</option>
+        <option value="openai">自定义 AI（OpenAI 兼容）</option>
+      </select>
+    </label>
+    <label>目标语言
+      <select id="targetLang"></select>
+    </label>
+  </section>
+
+  <section id="azureSection" hidden>
+    <h2>微软 Azure</h2>
+    <label>订阅密钥 <input id="azureKey" type="password" autocomplete="off" /></label>
+    <label>区域 <input id="azureRegion" placeholder="eastasia" /></label>
+  </section>
+
+  <section id="openaiSection" hidden>
+    <h2>自定义 AI</h2>
+    <label>Base URL <input id="openaiBaseUrl" placeholder="https://api.openai.com/v1" /></label>
+    <label>API Key <input id="openaiApiKey" type="password" autocomplete="off" /></label>
+    <label>模型 ID <input id="openaiModel" placeholder="gpt-4o-mini" /></label>
+  </section>
+
+  <div class="actions">
+    <button id="save" type="button">保存</button>
+    <button id="test" type="button">测试连接</button>
+    <span id="status"></span>
+  </div>
+
+  <p class="hint">默认微软翻译无需密钥。邮件内容仅发送至你选择的翻译服务，密钥只保存在本机。</p>
+
+  <script src="../shared/languages.js"></script>
+  <script src="../shared/settings.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

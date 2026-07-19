@@ -1,0 +1,20 @@
+{
+  "extensionName": {
+    "message": "邮件翻译"
+  },
+  "extensionDescription": {
+    "message": "阅读邮件时全文替换翻译主题与正文，支持微软翻译与自定义 AI。"
+  },
+  "actionTranslate": {
+    "message": "翻译"
+  },
+  "actionShowOriginal": {
+    "message": "显示原文"
+  },
+  "actionShowTranslated": {
+    "message": "显示译文"
+  },
+  "actionTranslating": {
+    "message": "翻译中…"
+  }
+}

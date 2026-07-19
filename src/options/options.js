@@ -1,0 +1,118 @@
+/**
+ * 根据引擎显示对应配置区。
+ */
+function updateSections() {
+  const engine = document.getElementById("engine").value;
+  document.getElementById("azureSection").hidden = engine !== "microsoft-azure";
+  document.getElementById("openaiSection").hidden = engine !== "openai";
+}
+
+/**
+ * 从页面表单读取设置。
+ * @returns {object}
+ */
+function readFormSettings() {
+  return {
+    engine: document.getElementById("engine").value,
+    targetLang: document.getElementById("targetLang").value,
+    azureKey: document.getElementById("azureKey").value,
+    azureRegion: document.getElementById("azureRegion").value,
+    openaiBaseUrl: document.getElementById("openaiBaseUrl").value,
+    openaiApiKey: document.getElementById("openaiApiKey").value,
+    openaiModel: document.getElementById("openaiModel").value,
+  };
+}
+
+/**
+ * 将设置写入表单。
+ * @param {object} s 设置
+ */
+function fillForm(s) {
+  document.getElementById("engine").value = s.engine || "microsoft-free";
+  document.getElementById("targetLang").value = s.targetLang || "zh-Hans";
+  document.getElementById("azureKey").value = s.azureKey || "";
+  document.getElementById("azureRegion").value = s.azureRegion || "";
+  document.getElementById("openaiBaseUrl").value = s.openaiBaseUrl || "";
+  document.getElementById("openaiApiKey").value = s.openaiApiKey || "";
+  document.getElementById("openaiModel").value = s.openaiModel || "";
+  updateSections();
+}
+
+/**
+ * 设置状态文案。
+ * @param {string} text 文案
+ * @param {boolean} isError 是否错误
+ */
+function setStatus(text, isError) {
+  const el = document.getElementById("status");
+  el.textContent = text;
+  el.style.color = isError ? "#b71c1c" : "#0d652d";
+}
+
+/**
+ * 初始化设置页。
+ */
+async function init() {
+  // 填充语言列表
+  const select = document.getElementById("targetLang");
+  const langs = getTargetLanguages();
+  for (let i = 0; i < langs.length; i++) {
+    const opt = document.createElement("option");
+    opt.value = langs[i].code;
+    opt.textContent = langs[i].label + " (" + langs[i].code + ")";
+    select.appendChild(opt);
+  }
+
+  // 加载已有设置
+  try {
+    const settings = await browser.runtime.sendMessage({ type: "GET_SETTINGS" });
+    fillForm(settings || normalizeSettings({}));
+  } catch (e) {
+    fillForm(normalizeSettings({}));
+  }
+
+  document.getElementById("engine").addEventListener("change", updateSections);
+
+  document.getElementById("save").addEventListener("click", async function () {
+    const settings = readFormSettings();
+    const check = validateSettingsForEngine(settings);
+    if (!check.ok) {
+      setStatus(check.error, true);
+      return;
+    }
+    try {
+      await browser.runtime.sendMessage({
+        type: "SAVE_SETTINGS",
+        settings: settings,
+      });
+      setStatus("已保存", false);
+    } catch (e) {
+      setStatus((e && e.message) || "保存失败", true);
+    }
+  });
+
+  document.getElementById("test").addEventListener("click", async function () {
+    const settings = readFormSettings();
+    const check = validateSettingsForEngine(settings);
+    if (!check.ok) {
+      setStatus(check.error, true);
+      return;
+    }
+    setStatus("测试中…", false);
+    try {
+      const result = await browser.runtime.sendMessage({
+        type: "TEST_ENGINE",
+        settings: settings,
+      });
+      if (result && result.ok) {
+        setStatus("连接成功：" + (result.sample || ""), false);
+      } else {
+        setStatus((result && result.error) || "测试失败", true);
+      }
+    } catch (e) {
+      setStatus((e && e.message) || "测试失败", true);
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", init);
