@@ -70,7 +70,37 @@ async function setActionState(tabId, state) {
 }
 
 /**
- * 按当前邮件同步按钮（切换邮件后 DOM 为原文）。
+ * 将缓存中的译文重新写回阅读窗。
+ * @param {number} tabId 标签 ID
+ * @param {{ translated?: { subject: string, html: string }, view?: string }} entry 缓存项
+ * @returns {Promise<boolean>} 是否成功应用
+ */
+async function restoreTranslatedView(tabId, entry) {
+  if (tabId == null || !entry || !entry.translated || entry.view !== "translated") {
+    return false;
+  }
+  const payload = {
+    type: "APPLY_TRANSLATION",
+    subject: entry.translated.subject,
+    html: entry.translated.html,
+  };
+  // 阅读窗脚本可能尚未连接，短暂重试
+  for (let i = 0; i < 10; i++) {
+    try {
+      await sendToDisplay(tabId, payload);
+      return true;
+    } catch (e) {
+      await new Promise(function (resolve) {
+        setTimeout(resolve, 80 * (i + 1));
+      });
+    }
+  }
+  console.warn("恢复译文失败：阅读窗脚本未就绪");
+  return false;
+}
+
+/**
+ * 按当前邮件同步按钮，并在需要时恢复上次译文视图。
  * @param {number} tabId 标签 ID
  * @param {number|string|null} messageId 邮件 ID
  */
@@ -84,7 +114,12 @@ async function syncActionForDisplayedMessage(tabId, messageId) {
   currentMessageByTab.set(tabId, messageId);
   const entry = cache.get(cacheKey(tabId, messageId));
   if (entry && entry.translated) {
-    entry.view = "original";
+    // 保留会话内上次原文/译文偏好；切换邮件后 DOM 会回到原文，需按状态重绘
+    if (entry.view === "translated") {
+      await setActionState(tabId, "translated");
+      await restoreTranslatedView(tabId, entry);
+      return;
+    }
     await setActionState(tabId, "original");
     return;
   }
@@ -273,6 +308,20 @@ async function onTranslateClicked(tab) {
 
 // --- 事件绑定 ---
 
+/**
+ * 根据 tab 当前邮件尝试恢复译文视图。
+ * @param {number|null} tabId 标签 ID
+ */
+function tryRestoreForTab(tabId) {
+  if (tabId == null) return;
+  const messageId = currentMessageByTab.get(tabId);
+  if (messageId == null) return;
+  const entry = cache.get(cacheKey(tabId, messageId));
+  restoreTranslatedView(tabId, entry).catch(function (e) {
+    console.warn("恢复译文失败", e);
+  });
+}
+
 browser.runtime.onConnect.addListener(function (port) {
   if (!port || port.name !== PORT_NAME) return;
   const tabId = resolveTabId(port.sender && port.sender.tab);
@@ -281,6 +330,13 @@ browser.runtime.onConnect.addListener(function (port) {
   port.onDisconnect.addListener(function () {
     displayPorts.delete(key);
   });
+  // 阅读窗脚本就绪 / 主动就绪通知后补恢复译文
+  port.onMessage.addListener(function (msg) {
+    if (msg && msg.type === "DISPLAY_READY") {
+      tryRestoreForTab(tabId);
+    }
+  });
+  tryRestoreForTab(tabId);
 });
 
 browser.messageDisplayAction.onClicked.addListener(onTranslateClicked);

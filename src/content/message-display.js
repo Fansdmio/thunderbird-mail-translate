@@ -87,6 +87,18 @@ function handleDisplayMessage(msg) {
 }
 
 /**
+ * 通知后台阅读窗已就绪（用于恢复译文状态）。
+ * @param {browser.runtime.Port} port 后台 Port
+ */
+function notifyDisplayReady(port) {
+  try {
+    port.postMessage({ type: "DISPLAY_READY" });
+  } catch (e) {
+    // 忽略
+  }
+}
+
+/**
  * 连接后台 Port。
  */
 function connectBackground() {
@@ -96,6 +108,14 @@ function connectBackground() {
     port.onDisconnect.addListener(function () {
       setTimeout(connectBackground, 500);
     });
+    // 正文可能稍晚才渲染，延迟再通知一次
+    notifyDisplayReady(port);
+    setTimeout(function () {
+      notifyDisplayReady(port);
+    }, 120);
+    setTimeout(function () {
+      notifyDisplayReady(port);
+    }, 400);
   } catch (e) {
     setTimeout(connectBackground, 1000);
   }
